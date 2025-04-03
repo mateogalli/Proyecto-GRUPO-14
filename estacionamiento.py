@@ -2,7 +2,7 @@
 estacionamiento = {}
 
 # Mapa del estacionamiento (15x15 con filas A-O y columnas 1-15)
-filas = "ABCDEFGHIJKLMNO"
+filas = "ABCDEFGHIJKLMNO" 
 columnas = list(range(1, 16))
 mapa = [[None for _ in columnas] for _ in filas]
 
