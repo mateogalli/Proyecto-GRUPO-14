@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Estacionamiento Shopping</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <h1>Registro de Estacionamiento</h1>
+    <form id="formEstacionamiento">
+        <label>Documento:</label>
+        <input type="text" id="documento" required><br>
+
+        <label>Tipo de Vehículo:</label>
+        <select id="vehiculo">
+            <option value="AUTO">Auto</option>
+            <option value="MOTO">Moto</option>
+            <option value="CAMIONETA">Camioneta</option>
+        </select><br>
+
+        <label>Tiempo de Estancia:</label>
+        <select id="tiempo">
+            <option value="1H">1 Hora</option>
+            <option value="2H">2 Horas</option>
+            <option value="3H">3 Horas</option>
+            <option value="ESTADIA">Estadía</option>
+        </select><br>
+
+        <label>Ubicación:</label>
+        <input type="text" id="ubicacion" placeholder="Ej: A3" required><br>
+
+        <label>Método de Pago:</label>
+        <select id="pago">
+            <option value="EFECTIVO">Efectivo</option>
+            <option value="QR">QR</option>
+        </select><br>
+
+        <label>¿Lavado de vehículo?</label>
+        <select id="lavado">
+            <option value="NO">No</option>
+            <option value="SI">Sí</option>
+        </select><br>
+
+        <button type="submit">Registrar</button>
+    </form>
+
+    <script src="script.js"></script>
+</body>
+</html>
