@@ -1,37 +1,30 @@
 from flask import Flask, request, jsonify
+from flask_cors import CORS
 
 app = Flask(__name__)
+CORS(app)  # Permitir peticiones desde el frontend
 
-# Base de datos temporal (en memoria)
+# Base de datos simulada (lista en memoria)
 estacionamiento = {}
+
+@app.route("/", methods=["GET"])  # <-- Ruta base para probar si Flask responde
+def home():
+    return "Servidor Flask en ejecución."
 
 @app.route("/registrar", methods=["POST"])
 def registrar():
     datos = request.json
     documento = datos.get("documento")
-    vehiculo = datos.get("vehiculo")
-    tiempo = datos.get("tiempo")
-    ubicacion = datos.get("ubicacion")
-    pago = datos.get("pago")
-    lavado = datos.get("lavado", "NO")
-
-    if documento in estacionamiento:
-        return jsonify({"error": "El usuario ya tiene un vehículo registrado"}), 400
-
-    # Guardamos los datos en la "base de datos"
-    estacionamiento[documento] = {
-        "vehiculo": vehiculo,
-        "tiempo": tiempo,
-        "ubicacion": ubicacion,
-        "pago": pago,
-        "lavado": lavado
-    }
     
-    return jsonify({"mensaje": "Registro exitoso", "datos": estacionamiento[documento]}), 200
+    if documento in estacionamiento:
+        return jsonify({"error": "El usuario ya está registrado"}), 400
+
+    estacionamiento[documento] = datos
+    return jsonify({"mensaje": "Registro exitoso", "datos": datos})
 
 @app.route("/obtener", methods=["GET"])
 def obtener():
-    return jsonify(estacionamiento), 200
+    return jsonify(estacionamiento)
 
 if __name__ == "__main__":
     app.run(debug=True)
