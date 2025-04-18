@@ -1,4 +1,20 @@
 const API = "http://localhost:5000";
+// Mostrar perfil del usuario logueado
+function mostrarPerfil() {
+    const usuario = localStorage.getItem("usuarioLogueado");
+    if (usuario) {
+        const nombre = usuario;
+        const foto = `img/${usuario}.jpg`; // La imagen debe estar en la carpeta /img con ese nombre
+
+        document.getElementById("fotoUsuario").src = foto;
+        document.getElementById("nombreUsuario").innerText = nombre;
+        document.getElementById("perfilUsuario").style.display = "flex";
+    }
+}
+
+// Evento de envío del formulario
+document.getElementById("formEstacionamiento").addEventListener("submit", function(event) {
+    event.preventDefault();
 
 async function cargarMapa() {
   const res = await fetch(`${API}/mapa`);
@@ -22,6 +38,21 @@ async function cargarMapa() {
       }
 
       filaDiv.appendChild(celdaBtn);
+    fetch("http://127.0.0.1:5000/registrar", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(datos)
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.error) {
+            alert("Error: " + data.error);
+        } else {
+            alert("Registro exitoso: " + JSON.stringify(data));
+        }
+    })
+    .catch(error => {
+        console.error("Error:", error);
     });
     divMapa.appendChild(filaDiv);
   });
@@ -80,3 +111,7 @@ document.getElementById("retiro-form").addEventListener("submit", async (e) => {
 });
 
 cargarMapa();
+// Mostrar el perfil al cargar la página
+window.addEventListener("DOMContentLoaded", () => {
+    mostrarPerfil();
+});
