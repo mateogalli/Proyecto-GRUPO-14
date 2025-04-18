@@ -2,7 +2,8 @@
 const usuarios = {
     bauti: "44243400",
     mateo: "40475261",
-    alvaro: "43402735"
+    alvaro: "43402735",
+    mati: "43876629"
 };
 
 // Mostrar perfil del usuario logueado
