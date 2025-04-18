@@ -1,55 +1,64 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Estacionamiento Shopping</title>
-    <link rel="stylesheet" href="styles.css">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Estacionamiento Shopping</title>
+  <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
+  <h1>Estacionamiento Shopping 🅿️</h1>
 
-    <video autoplay muted loop id="video-fondo">
-        <source src="video/video-fondo.mp4" type="video/mp4">
-    </video>
-
-    <h1>Registro de Estacionamiento</h1>
-    <form id="formEstacionamiento">
-        <label>Documento:</label>
-        <input type="text" id="documento" required><br>
-
-        <label>Tipo de Vehículo:</label>
-        <select id="vehiculo">
+  <div class="contenedor">
+    <!-- Columna izquierda: Registro + Retiro -->
+    <div class="left-panel">
+      <section id="formulario">
+        <h2>Registrar vehículo</h2>
+        <form id="registro-form">
+          <input type="text" id="documento" placeholder="Documento (DNI)" required />
+          <select id="tipo">
             <option value="AUTO">Auto</option>
             <option value="MOTO">Moto</option>
             <option value="CAMIONETA">Camioneta</option>
-        </select><br>
-
-        <label>Tiempo de Estancia:</label>
-        <select id="tiempo">
-            <option value="1H">1 Hora</option>
-            <option value="2H">2 Horas</option>
-            <option value="3H">3 Horas</option>
-            <option value="ESTADIA">Estadía</option>
-        </select><br>
-
-        <label>Ubicación:</label>
-        <input type="text" id="ubicacion" placeholder="Ej: A3" required><br>
-
-        <label>Método de Pago:</label>
-        <select id="pago">
+          </select>
+          <select id="tiempo">
+            <option value="1">1 hora</option>
+            <option value="2">2 horas</option>
+            <option value="3">3 horas</option>
+            <option value="4">4 horas</option>
+            <option value="5">5 horas</option>
+            <option value="6">6 horas</option>
+            <option value="ESTADÍA">Estadía</option>
+          </select>
+          <select id="pago">
             <option value="EFECTIVO">Efectivo</option>
             <option value="QR">QR</option>
-        </select><br>
-
-        <label>¿Lavado de vehículo?</label>
-        <select id="lavado">
-            <option value="NO">No</option>
+          </select>
+          <select id="lavado">
+            <option value="NO">¿Lavado? No</option>
             <option value="SI">Sí</option>
-        </select><br>
+          </select>
+          <input type="text" id="ubicacion" placeholder="Ubicación seleccionada" readonly />
+          <button type="submit">Registrar</button>
+        </form>
+      </section>
 
-        <button type="submit">Registrar</button>
-    </form>
+      <section id="retiro">
+        <h2>Retirar vehículo</h2>
+        <form id="retiro-form">
+          <input type="text" id="retiro-dni" placeholder="Documento (DNI)" required />
+          <button type="submit">Retirar vehículo</button>
+        </form>
+      </section>
+    </div>
 
-    <script src="script.js"></script>
+    <!-- Columna derecha: Mapa -->
+    <section id="mapa-section">
+      <h2>Mapa del estacionamiento</h2>
+      <div id="mapa"></div>
+    </section>
+  </div>
+
+  <script src="script.js"></script>
 </body>
 </html>
