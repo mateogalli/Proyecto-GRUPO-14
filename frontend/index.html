@@ -9,49 +9,38 @@
 <body>
   <h1>Estacionamiento Shopping 🅿️</h1>
 
-  <div class="contenedor">
-    <!-- Columna izquierda: Registro + Retiro -->
+  <!-- Perfil arriba a la derecha -->
+  <div id="perfilUsuario" class="perfil-usuario">
+    <img id="fotoUsuario" src="" alt="Foto de usuario">
+    <span id="nombreUsuario"></span>
+  </div>
+
+  <!-- Login -->
+  <div id="loginContainer">
+    <form id="loginForm">
+      <h2>Iniciar Sesión</h2>
+      <input type="text" id="usuario" placeholder="Usuario" required><br>
+      <input type="password" id="password" placeholder="Contraseña" required><br>
+      <button type="submit">Ingresar</button>
+      <p id="loginError" style="color: red; display: none;">Usuario o contraseña incorrectos</p>
+    </form>
+  </div>
+
+  <!-- Contenido principal oculto hasta iniciar sesión -->
+  <div class="contenedor" id="mainContent" style="display: none;">
     <div class="left-panel">
+      <!-- Registro -->
       <section id="formulario">
         <h2>Registrar vehículo</h2>
         <form id="registro-form">
           <input type="text" id="documento" placeholder="Documento (DNI)" required />
+
           <select id="tipo">
-    <div id="perfilUsuario" class="perfil-usuario">
-        <img id="fotoUsuario" src="" alt="Foto de usuario">
-        <span id="nombreUsuario"></span>
-    </div>
-    
-
-    <video autoplay muted loop id="video-fondo">
-        <source src="video/video-fondo.mp4" type="video/mp4">
-    </video>
-
-    <h1>Estacionamiento Shopping</h1>
-
-    <!-- LOGIN -->
-    <div id="loginContainer">
-        <form id="loginForm">
-            <h2>Iniciar Sesión</h2>
-            <input type="text" id="usuario" placeholder="Usuario" required><br>
-            <input type="password" id="password" placeholder="Contraseña" required><br>
-            <button type="submit">Ingresar</button>
-            <p id="loginError" style="color: red; display: none;">Usuario o contraseña incorrectos</p>
-        </form>
-    </div>
-    
-
-    <!-- FORMULARIO REGISTRO -->
-    <form id="formEstacionamiento" style="display:none;">
-        <label>Documento:</label>
-        <input type="text" id="documento" required><br>
-
-        <label>Tipo de Vehículo:</label>
-        <select id="vehiculo">
             <option value="AUTO">Auto</option>
             <option value="MOTO">Moto</option>
             <option value="CAMIONETA">Camioneta</option>
           </select>
+
           <select id="tiempo">
             <option value="1">1 hora</option>
             <option value="2">2 horas</option>
@@ -61,19 +50,23 @@
             <option value="6">6 horas</option>
             <option value="ESTADÍA">Estadía</option>
           </select>
+
           <select id="pago">
             <option value="EFECTIVO">Efectivo</option>
             <option value="QR">QR</option>
           </select>
+
           <select id="lavado">
             <option value="NO">¿Lavado? No</option>
             <option value="SI">Sí</option>
           </select>
+
           <input type="text" id="ubicacion" placeholder="Ubicación seleccionada" readonly />
           <button type="submit">Registrar</button>
         </form>
       </section>
 
+      <!-- Retiro -->
       <section id="retiro">
         <h2>Retirar vehículo</h2>
         <form id="retiro-form">
@@ -83,7 +76,7 @@
       </section>
     </div>
 
-    <!-- Columna derecha: Mapa -->
+    <!-- Mapa -->
     <section id="mapa-section">
       <h2>Mapa del estacionamiento</h2>
       <div id="mapa"></div>
