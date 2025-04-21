@@ -9,64 +9,33 @@
 <body>
   <h1>Estacionamiento Shopping 🅿️</h1>
 
-  <!-- Perfil arriba a la derecha -->
-  <div id="perfilUsuario" class="perfil-usuario">
-    <img id="fotoUsuario" src="" alt="Foto de usuario">
-    <span id="nombreUsuario"></span>
-  </div>
-
-  <!-- Login -->
-  <div id="loginContainer">
-    <form id="loginForm">
-      <h2>Iniciar Sesión</h2>
-      <input type="text" id="usuario" placeholder="Usuario" required><br>
-      <input type="password" id="password" placeholder="Contraseña" required><br>
-      <button type="submit">Ingresar</button>
-      <p id="loginError" style="color: red; display: none;">Usuario o contraseña incorrectos</p>
-    </form>
-  </div>
-
-  <!-- Contenido principal oculto hasta iniciar sesión -->
-  <div class="contenedor" id="mainContent" style="display: none;">
+  <div class="contenedor">
+    <!-- Izquierda: registro + retiro -->
     <div class="left-panel">
-      <!-- Registro -->
       <section id="formulario">
         <h2>Registrar vehículo</h2>
         <form id="registro-form">
           <input type="text" id="documento" placeholder="Documento (DNI)" required />
-
-          <select id="tipo">
+          <select id="tipo" required>
+            <option value="">Tipo de vehículo</option>
             <option value="AUTO">Auto</option>
             <option value="MOTO">Moto</option>
             <option value="CAMIONETA">Camioneta</option>
           </select>
-
-          <select id="tiempo">
-            <option value="1">1 hora</option>
-            <option value="2">2 horas</option>
-            <option value="3">3 horas</option>
-            <option value="4">4 horas</option>
-            <option value="5">5 horas</option>
-            <option value="6">6 horas</option>
-            <option value="ESTADÍA">Estadía</option>
-          </select>
-
-          <select id="pago">
+          <select id="pago" required>
+            <option value="">Método de pago</option>
             <option value="EFECTIVO">Efectivo</option>
             <option value="QR">QR</option>
           </select>
-
-          <select id="lavado">
-            <option value="NO">¿Lavado? No</option>
-            <option value="SI">Sí</option>
-          </select>
-
+          <label>
+            <input type="checkbox" id="lavado" />
+            Solicitar lavado
+          </label>
           <input type="text" id="ubicacion" placeholder="Ubicación seleccionada" readonly />
           <button type="submit">Registrar</button>
         </form>
       </section>
 
-      <!-- Retiro -->
       <section id="retiro">
         <h2>Retirar vehículo</h2>
         <form id="retiro-form">
@@ -76,12 +45,14 @@
       </section>
     </div>
 
-    <!-- Mapa -->
+    <!-- Derecha: mapa -->
     <section id="mapa-section">
       <h2>Mapa del estacionamiento</h2>
       <div id="mapa"></div>
     </section>
   </div>
+
+  <div id="resultado" class="resultado"></div>
 
   <script src="script.js"></script>
 </body>
