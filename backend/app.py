@@ -1,4 +1,3 @@
-# app.py
 from flask import Flask, request, jsonify, send_from_directory
 from flask_cors import CORS
 from datetime import datetime
@@ -9,113 +8,76 @@ app = Flask(__name__, static_folder="")
 CORS(app)
 
 # Base de datos en memoria
-estacionamiento = {}   # { documento: datos }
-ocupacion = {}         # { ubicacion: documento }
+estacionamiento = {}   
+ocupacion = {}         
 
 # Tarifas
 TARIFA_HORA   = 2000
-RECARGO_QR    = 0.10    # 10%
-PRECIOS_LAVADO = {
-    "MOTO":     4000,
-    "AUTO":    10000,
-    "CAMIONETA":15000
-}
+RECARGO_QR    = 0.10    
+PRECIOS_LAVADO = {"MOTO":4000,"AUTO":10000,"CAMIONETA":15000}
 
-
-# Servir index.html desde la raíz para evitar problemas de file://
+# Servir index.html desde la raíz
 @app.route("/", methods=["GET"])
 def home():
     return send_from_directory(os.getcwd(), "index.html")
 
-
 # Registrar un vehículo
 @app.route("/registrar", methods=["POST"])
 def registrar():
-    datos    = request.json
-    documento= datos.get("documento")
-    ubicacion= datos.get("ubicacion")
-    tipo     = datos.get("tipo")
-    pago     = datos.get("pago")     # "EFECTIVO" o "QR"
-    lavado   = datos.get("lavado")   # "SI" o "NO"
+    datos = request.json
 
-    # Validaciones
+    documento, ubicacion, tipo, pago, lavado = map(lambda k: datos.get(k), ["documento", "ubicacion", "tipo", "pago", "lavado"])
+
     if documento in estacionamiento:
         return jsonify({"error": "Documento ya registrado"}), 400
     if ubicacion in ocupacion:
         return jsonify({"error": "Ubicación ocupada"}), 400
 
-    # Hora de entrada
     now = datetime.now()
-    estacionamiento[documento] = {
-        "tipo":       tipo,
-        "pago":       pago,
-        "lavado":     lavado,
-        "ubicacion":  ubicacion,
-        "entry_time": now.isoformat()
-    }
+    estacionamiento[documento] = {"tipo":tipo,"pago":pago,"lavado":lavado,"ubicacion":ubicacion,"entry_time": now.isoformat()}
     ocupacion[ubicacion] = documento
 
-    return jsonify({
-        "mensaje":     "Registro exitoso",
-        "documento":   documento,
-        "ubicacion":   ubicacion,
-        "entry_time":  now.isoformat()
-    })
+    return jsonify({"mensaje":"Registro exitoso","documento":documento,"ubicacion":ubicacion,"entry_time":  now.isoformat()})
 
-
-# Obtener todas las reservas activas (para debug/ver)
+# RUTA Y FUNCION PARA ALMACENAR LOS DATOS
 @app.route("/obtener", methods=["GET"])
 def obtener():
     return jsonify(estacionamiento)
 
-
-# Obtener estado del mapa
+# A PARTIR DE ACA EL MAPA
 @app.route("/mapa", methods=["GET"])
 def obtener_mapa():
-    filas   = "ABCDEFGHIJKLMNO"
-    columnas= list(range(1,16))
-    mapa = []
-    for f in filas:
-        fila_actual = []
-        for c in columnas:
-            u = f + str(c)
-            fila_actual.append({
-                "ubicacion": u,
-                "estado":    "ocupado" if u in ocupacion else "libre"
-            })
-        mapa.append(fila_actual)
+    filas    = "ABCDEFGHIJ"
+    columnas = list(range(1, 16))
+
+    def construir_fila(f):
+        return list(map(
+            lambda c: {"ubicacion": f + str(c),"estado":"ocupado" if f + str(c) in ocupacion else "libre"}, columnas))
+
+    mapa = list(map(construir_fila, filas))
     return jsonify(mapa)
 
-
-# Retirar vehículo y calcular costo
+# A PARTIR DE ACA LO DE RETIRO DEL VIHUCULO
 @app.route("/retirar", methods=["DELETE"])
 def retirar():
-    datos     = request.json
-    documento = datos.get("documento")
+    documento = request.json.get("documento")
 
     if documento not in estacionamiento:
         return jsonify({"error": "Documento no encontrado"}), 404
 
-    info       = estacionamiento[documento]
+    info = estacionamiento[documento]
     entry_time = datetime.fromisoformat(info["entry_time"])
     exit_time  = datetime.now()
+    diferencia = exit_time - entry_time
+    horas = math.ceil(diferencia.total_seconds() / 3600)
 
-    # Horas totales redondeadas hacia arriba
-    delta  = exit_time - entry_time
-    horas  = math.ceil(delta.total_seconds() / 3600)
-
-    # Costo base
+    # Cálculo del costo
     costo = horas * TARIFA_HORA
-
-    # Recargo QR
     if info["pago"] == "QR":
         costo += costo * RECARGO_QR
-
-    # Lavado opcional
     if info["lavado"] == "SI":
         costo += PRECIOS_LAVADO.get(info["tipo"], 0)
 
-    # Liberar plaza
     ubicacion = info["ubicacion"]
     ocupacion.pop(ubicacion, None)
     estacionamiento.pop(documento)
@@ -129,7 +91,6 @@ def retirar():
         "horas":      horas,
         "costo":      int(costo)
     })
-
 
 if __name__ == "__main__":
     app.run(debug=True)
