@@ -34,17 +34,27 @@ def registrar():
         return jsonify({"error": "Ubicación ocupada"}), 400
 
     now = datetime.now()
-    estacionamiento[documento] = {"tipo":tipo,"pago":pago,"lavado":lavado,"ubicacion":ubicacion,"entry_time": now.isoformat()}
+    info_basica = (tipo, pago, lavado)  # ← Aquí usamos una tupla
+    estacionamiento[documento] = {
+        "info": info_basica,
+        "ubicacion": ubicacion,
+        "entry_time": now.isoformat()
+    }
     ocupacion[ubicacion] = documento
 
-    return jsonify({"mensaje":"Registro exitoso","documento":documento,"ubicacion":ubicacion,"entry_time":  now.isoformat()})
+    return jsonify({
+        "mensaje": "Registro exitoso",
+        "documento": documento,
+        "ubicacion": ubicacion,
+        "entry_time": now.isoformat()
+    })
 
-# RUTA Y FUNCION PARA ALMACENAR LOS DATOS
+# Obtener todos los datos del estacionamiento
 @app.route("/obtener", methods=["GET"])
 def obtener():
     return jsonify(estacionamiento)
 
-# A PARTIR DE ACA EL MAPA
+# Obtener mapa de ubicaciones
 @app.route("/mapa", methods=["GET"])
 def obtener_mapa():
     filas    = "ABCDEFGHIJ"
@@ -57,7 +67,7 @@ def obtener_mapa():
     mapa = list(map(construir_fila, filas))
     return jsonify(mapa)
 
-# A PARTIR DE ACA LO DE RETIRO DEL VIHUCULO
+# Retirar un vehículo
 @app.route("/retirar", methods=["DELETE"])
 def retirar():
     documento = request.json.get("documento")
@@ -66,6 +76,7 @@ def retirar():
         return jsonify({"error": "Documento no encontrado"}), 404
 
     info = estacionamiento[documento]
+    tipo, pago, lavado = info["info"]  # ← Desempaquetamos la tupla
     entry_time = datetime.fromisoformat(info["entry_time"])
     exit_time  = datetime.now()
     diferencia = exit_time - entry_time
@@ -73,10 +84,10 @@ def retirar():
 
     # Cálculo del costo
     costo = horas * TARIFA_HORA
-    if info["pago"] == "QR":
+    if pago == "QR":
         costo += costo * RECARGO_QR
-    if info["lavado"] == "SI":
-        costo += PRECIOS_LAVADO.get(info["tipo"], 0)
+    if lavado == "SI":
+        costo += PRECIOS_LAVADO.get(tipo, 0)
 
     ubicacion = info["ubicacion"]
     ocupacion.pop(ubicacion, None)
