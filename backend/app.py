@@ -34,7 +34,7 @@ def registrar():
         return jsonify({"error": "Ubicación ocupada"}), 400
 
     now = datetime.now()
-    info_basica = (tipo, pago, lavado)  # ← Aquí usamos una tupla
+    info_basica = (tipo, pago, lavado)  # ← Aca arranca el intento de tupla, fijense si les va o agregamos mas
     estacionamiento[documento] = {
         "info": info_basica,
         "ubicacion": ubicacion,
@@ -76,7 +76,7 @@ def retirar():
         return jsonify({"error": "Documento no encontrado"}), 404
 
     info = estacionamiento[documento]
-    tipo, pago, lavado = info["info"]  # ← Desempaquetamos la tupla
+    tipo, pago, lavado = info["info"]  # ← Y de ACA sale la tupla
     entry_time = datetime.fromisoformat(info["entry_time"])
     exit_time  = datetime.now()
     diferencia = exit_time - entry_time
