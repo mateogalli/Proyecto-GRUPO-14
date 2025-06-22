@@ -51,6 +51,10 @@ document.getElementById("registro-form").addEventListener("submit", async e => {
       `Entrada registrada: ${data.entry_time} en ${data.ubicacion}`;
     document.getElementById("registro-form").reset();
     cargarMapa();
+    document.getElementById("qr-imagen").style.display = "block";
+    document.getElementById("qr-imagen").src = `QR/${data.documento}.png`;
+
+
   } else {
     alert(data.error);
   }
@@ -68,9 +72,9 @@ document.getElementById("retiro-form").addEventListener("submit", async e => {
   if (res.ok) {
     document.getElementById("resultado").innerHTML =
       `<p>Entrada: ${data.entry_time}</p>
-       <p>Salida: ${data.exit_time}</p>
-       <p>Horas: ${data.horas}</p>
-       <p><strong>Total a pagar: $${data.costo}</strong></p>`;
+      <p>Salida: ${data.exit_time}</p>
+      <p>Horas: ${data.horas}</p>
+      <p><strong>Total a pagar: $${data.costo}</strong></p>`;
     document.getElementById("retiro-form").reset();
     cargarMapa();
   } else {

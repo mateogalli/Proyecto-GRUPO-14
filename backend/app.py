@@ -3,6 +3,7 @@ from flask_cors import CORS
 from datetime import datetime
 import math
 import os
+import qrcode
 
 app = Flask(__name__, static_folder="")  
 CORS(app)
@@ -21,11 +22,22 @@ PRECIOS_LAVADO = {"MOTO":4000,"AUTO":10000,"CAMIONETA":15000}
 def home():
     return send_from_directory(os.getcwd(), "index.html")
 
+#Generar un QR
+QR_FOLDER = os.path.join("QR")
+os.makedirs(QR_FOLDER, exist_ok=True)
+
+def generar_qr(documento, tipo, ubicacion, entry_time):
+    contenido = f"Documento: {documento}\nTipo: {tipo}\nUbicación: {ubicacion}\nIngreso: {entry_time}"
+    qr = qrcode.make(contenido)
+    nombre_archivo = f"{documento}.png"
+    ruta = os.path.join(QR_FOLDER, nombre_archivo)
+    qr.save(ruta)
+    return ruta
+
 # Registrar un vehículo
 @app.route("/registrar", methods=["POST"])
 def registrar():
     datos = request.json
-
     documento, ubicacion, tipo, pago, lavado = map(lambda k: datos.get(k), ["documento", "ubicacion", "tipo", "pago", "lavado"])
 
     if documento in estacionamiento:
@@ -34,7 +46,7 @@ def registrar():
         return jsonify({"error": "Ubicación ocupada"}), 400
 
     now = datetime.now()
-    info_basica = (tipo, pago, lavado)  # ← Aca arranca el intento de tupla, fijense si les va o agregamos mas
+    info_basica = (tipo, pago, lavado)
     estacionamiento[documento] = {
         "info": info_basica,
         "ubicacion": ubicacion,
@@ -42,12 +54,16 @@ def registrar():
     }
     ocupacion[ubicacion] = documento
 
+    # ✅ Generar QR automáticamente
+    generar_qr(documento, tipo, ubicacion, now.strftime("%Y-%m-%d %H:%M:%S"))
+
     return jsonify({
         "mensaje": "Registro exitoso",
         "documento": documento,
         "ubicacion": ubicacion,
         "entry_time": now.isoformat()
     })
+
 
 # Obtener todos los datos del estacionamiento
 @app.route("/obtener", methods=["GET"])
@@ -102,6 +118,10 @@ def retirar():
         "horas":      horas,
         "costo":      int(costo)
     })
+
+@app.route("/QR/<filename>")
+def servir_qr(filename):
+    return send_from_directory("QR", filename)
 
 if __name__ == "__main__":
     app.run(debug=True)
