@@ -51,10 +51,6 @@ document.getElementById("registro-form").addEventListener("submit", async e => {
       `Entrada registrada: ${data.entry_time} en ${data.ubicacion}`;
     document.getElementById("registro-form").reset();
     cargarMapa();
-    document.getElementById("qr-imagen").style.display = "block";
-    document.getElementById("qr-imagen").src = `QR/${data.documento}.png`;
-
-
   } else {
     alert(data.error);
   }
@@ -70,16 +66,33 @@ document.getElementById("retiro-form").addEventListener("submit", async e => {
   });
   const data = await res.json();
   if (res.ok) {
-    document.getElementById("resultado").innerHTML =
-      `<p>Entrada: ${data.entry_time}</p>
-      <p>Salida: ${data.exit_time}</p>
-      <p>Horas: ${data.horas}</p>
-      <p><strong>Total a pagar: $${data.costo}</strong></p>`;
+    if (data.pago === "QR") {
+      mostrarQR(data.documento);
+    } else {
+      document.getElementById("resultado").innerHTML =
+        `<p>Entrada: ${data.entry_time}</p>
+         <p>Salida: ${data.exit_time}</p>
+         <p>Horas: ${data.horas}</p>
+         <p><strong>Total a pagar: $${data.costo}</strong></p>`;
+    }
     document.getElementById("retiro-form").reset();
     cargarMapa();
   } else {
     alert(data.error);
   }
 });
+
+function mostrarQR(documento) {
+  document.getElementById("app-content").style.display = "none";
+  document.getElementById("qr-retiro-screen").style.display = "block";
+  document.getElementById("qr-retiro-img").src = `QR/${documento}.png`;
+}
+
+function volver() {
+  document.getElementById("qr-retiro-screen").style.display = "none";
+  document.getElementById("app-content").style.display = "block";
+  document.getElementById("retiro-form").reset();
+  document.getElementById("resultado").innerHTML = "";
+}
 
 cargarMapa();
