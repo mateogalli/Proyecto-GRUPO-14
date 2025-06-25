@@ -34,15 +34,45 @@ def registrar():
         return jsonify({"error": "Ubicación ocupada"}), 400
 
     now = datetime.now()
-    estacionamiento[documento] = {"tipo":tipo,"pago":pago,"lavado":lavado,"ubicacion":ubicacion,"entry_time": now.isoformat()}
+    estacionamiento[documento] = {
+        "tipo": tipo,
+        "pago": pago,
+        "lavado": lavado,
+        "ubicacion": ubicacion,
+        "entry_time": now.isoformat()
+    }
     ocupacion[ubicacion] = documento
 
-    return jsonify({"mensaje":"Registro exitoso","documento":documento,"ubicacion":ubicacion,"entry_time":  now.isoformat()})
+    return jsonify({
+        "mensaje": "Registro exitoso",
+        "documento": documento,
+        "ubicacion": ubicacion,
+        "entry_time": now.isoformat()
+    })
 
-# RUTA Y FUNCION PARA ALMACENAR LOS DATOS
+# RUTA Y FUNCION PARA ALMACENAR LOS DATOS EN ARCHIVO DE TEXTO
 @app.route("/obtener", methods=["GET"])
 def obtener():
-    return jsonify(estacionamiento)
+    try:
+        with open("datos_estacionamiento.txt", "w", encoding="utf-8") as archivo:
+            for doc, datos in estacionamiento.items():
+                linea = (
+                    f"Documento: {doc}, "
+                    f"Tipo: {datos['tipo']}, "
+                    f"Pago: {datos['pago']}, "
+                    f"Lavado: {datos['lavado']}, "
+                    f"Ubicación: {datos['ubicacion']}, "
+                    f"Entrada: {datos['entry_time']}\n"
+                )
+                archivo.write(linea)
+        return jsonify(estacionamiento)
+    except Exception as e:
+        return jsonify({"error": f"No se pudo guardar el archivo: {str(e)}"}), 500
+
+# RUTA PARA DESCARGAR EL ARCHIVO DE TEXTO
+@app.route("/datos_estacionamiento.txt")
+def descargar_archivo():
+    return send_from_directory(os.getcwd(), "datos_estacionamiento.txt", as_attachment=True)
 
 # A PARTIR DE ACA EL MAPA
 @app.route("/mapa", methods=["GET"])
@@ -52,12 +82,13 @@ def obtener_mapa():
 
     def construir_fila(f):
         return list(map(
-            lambda c: {"ubicacion": f + str(c),"estado":"ocupado" if f + str(c) in ocupacion else "libre"}, columnas))
+            lambda c: {"ubicacion": f + str(c), "estado": "ocupado" if f + str(c) in ocupacion else "libre"},
+            columnas))
 
     mapa = list(map(construir_fila, filas))
     return jsonify(mapa)
 
-# A PARTIR DE ACA LO DE RETIRO DEL VIHUCULO
+# A PARTIR DE ACA LO DE RETIRO DEL VEHICULO
 @app.route("/retirar", methods=["DELETE"])
 def retirar():
     documento = request.json.get("documento")
@@ -83,29 +114,14 @@ def retirar():
     estacionamiento.pop(documento)
 
     return jsonify({
-        "mensaje":    "Vehículo retirado correctamente",
-        "documento":  documento,
-        "ubicacion":  ubicacion,
+        "mensaje": "Vehículo retirado correctamente",
+        "documento": documento,
+        "ubicacion": ubicacion,
         "entry_time": entry_time.isoformat(),
-        "exit_time":  exit_time.isoformat(),
-        "horas":      horas,
-        "costo":      int(costo)
+        "exit_time": exit_time.isoformat(),
+        "horas": horas,
+        "costo": int(costo)
     })
 
 if __name__ == "__main__":
-    app.testing = False
     app.run(debug=True)
-
-app.testing = True
-
-USUARIOS_AUTORIZADOS = {
-    "bautista": "contrabauti",
-    "alvaro": "contraalvaro",
-    "mateo": "contramate",
-    "matias": "contramati"
-}
-
-def login(nombre, password):
-    nombre = nombre.strip().lower()
-    return USUARIOS_AUTORIZADOS.get(nombre) == password
-
