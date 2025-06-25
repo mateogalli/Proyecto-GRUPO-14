@@ -140,7 +140,6 @@
       "mateo": "contramate",
       "matias": "contramati"
     };
-
     function login() {
       const nombre = document.getElementById("login-nombre").value.trim().toLowerCase();
       const password = document.getElementById("login-pass").value;
@@ -153,6 +152,18 @@
         error.textContent = "Nombre o contraseña incorrecta.";
       }
     }
+    document.getElementById("login-nombre").addEventListener("keydown", function (event) {
+        if (event.key === "Enter") {
+          login();
+        }
+      });
+
+    document.getElementById("login-pass").addEventListener("keydown", function (event) {
+       if (event.key === "Enter") {
+          login();
+        }
+      });
+
   </script>
 </body>
 </html>
