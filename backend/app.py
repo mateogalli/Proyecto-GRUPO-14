@@ -93,4 +93,19 @@ def retirar():
     })
 
 if __name__ == "__main__":
+    app.testing = False
     app.run(debug=True)
+
+app.testing = True
+
+USUARIOS_AUTORIZADOS = {
+    "bautista": "contrabauti",
+    "alvaro": "contraalvaro",
+    "mateo": "contramate",
+    "matias": "contramati"
+}
+
+def login(nombre, password):
+    nombre = nombre.strip().lower()
+    return USUARIOS_AUTORIZADOS.get(nombre) == password
+
