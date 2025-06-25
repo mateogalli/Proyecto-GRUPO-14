@@ -1,74 +1,160 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Estacionamiento Shopping</title>
-    <link rel="stylesheet" href="styles.css">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Estacionamiento Shopping</title>
+  <link rel="stylesheet" href="styles.css" />
+  <style>
+    #login-container {
+      max-width: 300px;
+      margin: 40px auto;
+      background: white;
+      padding: 20px;
+      border-radius: 6px;
+      box-shadow: 0 0 5px rgba(0,0,0,0.2);
+    }
+    #app-content {
+      display: none;
+    }
+    #tarifas {
+      margin-bottom: 20px;
+      background-color: #ffffff;
+      padding: 15px;
+      border-radius: 6px;
+      box-shadow: 0 0 5px rgba(0,0,0,0.1);
+    }
+    #tarifas table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+    #tarifas th, #tarifas td {
+      border: 1px solid #ccc;
+      padding: 8px;
+      text-align: center;
+    }
+  </style>
 </head>
 <body>
-    <div id="perfilUsuario" class="perfil-usuario">
-        <img id="fotoUsuario" src="" alt="Foto de usuario">
-        <span id="nombreUsuario"></span>
+  <div id="login-container">
+    <h2>Iniciar sesión</h2>
+    <input type="text" id="login-nombre" placeholder="Ingrese su nombre" required />
+    <input type="password" id="login-pass" placeholder="Contraseña" required />
+    <button onclick="login()">Ingresar</button>
+    <p id="login-error" style="color: red;"></p>
+  </div>
+
+  <div id="app-content">
+    <h1>Estacionamiento Shopping 🅿️</h1>
+
+    <div id="tarifas">
+      <h2>Tarifas</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>Tipo de vehículo</th>
+            <th>Precio por hora</th>
+            <th>Lavado</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Moto</td>
+            <td>$1000</td>
+            <td>$4000</td>
+          </tr>
+          <tr>
+            <td>Auto</td>
+            <td>$2500</td>
+            <td>$10000</td>
+          </tr>
+          <tr>
+            <td>Camioneta</td>
+            <td>$3000</td>
+            <td>$15000</td>
+          </tr>
+          <tr>
+            <td colspan="3"><em>Pago con QR tiene un recargo del 10%</em></td>
+          </tr>
+        </tbody>
+      </table>
     </div>
-    
 
-    <video autoplay muted loop id="video-fondo">
-        <source src="video/video-fondo.mp4" type="video/mp4">
-    </video>
+    <div class="contenedor">
+      <div class="left-panel">
+        <section id="formulario">
+          <h2>Registrar vehículo</h2>
+          <form id="registro-form">
+            <input type="number" id="documento" placeholder="Documento (DNI)" required minlength="7" oninput="this.value=this.value.slice(0,8)" />
+            <select id="tipo" required>
+              <option value="">Tipo de vehículo</option>
+              <option value="AUTO">Auto</option>
+              <option value="MOTO">Moto</option>
+              <option value="CAMIONETA">Camioneta</option>
+            </select>
+            <select id="pago" required>
+              <option value="">Método de pago</option>
+              <option value="EFECTIVO">Efectivo</option>
+              <option value="QR">QR</option>
+            </select>
+            <label>
+              <input type="checkbox" id="lavado" />
+              Solicitar lavado
+            </label>
+            <input type="text" id="ubicacion" placeholder="Ubicación seleccionada" readonly />
+            <button type="submit">Registrar</button>
+          </form>
+        </section>
 
-    <h1>Estacionamiento Shopping</h1>
+        <section id="retiro">
+          <h2>Retirar vehículo</h2>
+          <form id="retiro-form">
+            <input type="number" id="retiro-dni" placeholder="Documento (DNI)" required minlength="7" oninput="this.value=this.value.slice(0,8)" />
+            <button type="submit">Retirar vehículo</button>
+          </form>
+        </section>
+      </div>
 
-    <!-- LOGIN -->
-    <div id="loginContainer">
-        <form id="loginForm">
-            <h2>Iniciar Sesión</h2>
-            <input type="text" id="usuario" placeholder="Usuario" required><br>
-            <input type="password" id="password" placeholder="Contraseña" required><br>
-            <button type="submit">Ingresar</button>
-            <p id="loginError" style="color: red; display: none;">Usuario o contraseña incorrectos</p>
-        </form>
+      <section id="mapa-section">
+        <h2>Mapa del estacionamiento</h2>
+        <div id="mapa"></div>
+      </section>
     </div>
-    
+    <div id="resultado" class="resultado"></div>
+  </div>
 
-    <!-- FORMULARIO REGISTRO -->
-    <form id="formEstacionamiento" style="display:none;">
-        <label>Documento:</label>
-        <input type="text" id="documento" required><br>
+  <script src="script.js"></script>
+  <script>
+    const USUARIOS_AUTORIZADOS = {
+      "bautista": "contrabauti",
+      "alvaro": "contraalvaro",
+      "mateo": "contramate",
+      "matias": "contramati"
+    };
+    function login() {
+      const nombre = document.getElementById("login-nombre").value.trim().toLowerCase();
+      const password = document.getElementById("login-pass").value;
+      const error = document.getElementById("login-error");
 
-        <label>Tipo de Vehículo:</label>
-        <select id="vehiculo">
-            <option value="AUTO">Auto</option>
-            <option value="MOTO">Moto</option>
-            <option value="CAMIONETA">Camioneta</option>
-        </select><br>
+      if (USUARIOS_AUTORIZADOS[nombre] === password) {
+        document.getElementById("login-container").style.display = "none";
+        document.getElementById("app-content").style.display = "block";
+      } else {
+        error.textContent = "Nombre o contraseña incorrecta.";
+      }
+    }
+    document.getElementById("login-nombre").addEventListener("keydown", function (event) {
+        if (event.key === "Enter") {
+          login();
+        }
+      });
 
-        <label>Tiempo de Estancia:</label>
-        <select id="tiempo">
-            <option value="1H">1 Hora</option>
-            <option value="2H">2 Horas</option>
-            <option value="3H">3 Horas</option>
-            <option value="ESTADIA">Estadía</option>
-        </select><br>
+    document.getElementById("login-pass").addEventListener("keydown", function (event) {
+       if (event.key === "Enter") {
+          login();
+        }
+      });
 
-        <label>Ubicación:</label>
-        <input type="text" id="ubicacion" placeholder="Ej: A3" required><br>
-
-        <label>Método de Pago:</label>
-        <select id="pago">
-            <option value="EFECTIVO">Efectivo</option>
-            <option value="QR">QR</option>
-        </select><br>
-
-        <label>¿Lavado de vehículo?</label>
-        <select id="lavado">
-            <option value="NO">No</option>
-            <option value="SI">Sí</option>
-        </select><br>
-
-        <button type="submit">Registrar</button>
-    </form>
-
-    <script src="script.js"></script>
+  </script>
 </body>
 </html>
