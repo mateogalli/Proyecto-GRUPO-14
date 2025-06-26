@@ -5,17 +5,17 @@ import math
 import os
 import qrcode
 
-app = Flask(__name__, static_folder="")
+app = Flask(__name__, static_folder="")  
 CORS(app)
 
 # Base de datos en memoria
-estacionamiento = {}
-ocupacion = {}
+estacionamiento = {}   
+ocupacion = {}         
 
 # Tarifas
-TARIFA_HORA = 2000
-RECARGO_QR = 0.10
-PRECIOS_LAVADO = {"MOTO": 4000, "AUTO": 10000, "CAMIONETA": 15000}
+TARIFA_HORA   = 2000
+RECARGO_QR    = 0.10    
+PRECIOS_LAVADO = {"MOTO":4000,"AUTO":10000,"CAMIONETA":15000}
 
 # Generar un QR
 QR_FOLDER = os.path.join("QR")
@@ -49,6 +49,9 @@ def registrar():
     info_basica = (tipo, pago, lavado)
     estacionamiento[documento] = {
         "info": info_basica,
+        "tipo": tipo,
+        "pago": pago,
+        "lavado": lavado,
         "ubicacion": ubicacion,
         "entry_time": now.isoformat()
     }
@@ -57,6 +60,7 @@ def registrar():
     if pago == "QR":
         generar_qr(documento, tipo, ubicacion, now.strftime("%Y-%m-%d %H:%M:%S"))
 
+
     return jsonify({
         "mensaje": "Registro exitoso",
         "documento": documento,
@@ -64,19 +68,44 @@ def registrar():
         "entry_time": now.isoformat()
     })
 
-# Obtener mapa de ubicaciones
+# RUTA Y FUNCION PARA ALMACENAR LOS DATOS EN ARCHIVO DE TEXTO
+@app.route("/obtener", methods=["GET"])
+def obtener():
+    try:
+        with open("datos_estacionamiento.txt", "w", encoding="utf-8") as archivo:
+            for doc, datos in estacionamiento.items():
+                linea = (
+                    f"Documento: {doc}, "
+                    f"Tipo: {datos['tipo']}, "
+                    f"Pago: {datos['pago']}, "
+                    f"Lavado: {datos['lavado']}, "
+                    f"Ubicación: {datos['ubicacion']}, "
+                    f"Entrada: {datos['entry_time']}\n"
+                )
+                archivo.write(linea)
+        return jsonify(estacionamiento)
+    except Exception as e:
+        return jsonify({"error": f"No se pudo guardar el archivo: {str(e)}"}), 500
+
+# RUTA PARA DESCARGAR EL ARCHIVO DE TEXTO
+@app.route("/datos_estacionamiento.txt")
+def descargar_archivo():
+    return send_from_directory(os.getcwd(), "datos_estacionamiento.txt", as_attachment=True)
+
+# A PARTIR DE ACA EL MAPA
 @app.route("/mapa", methods=["GET"])
 def obtener_mapa():
-    filas = "ABCDEFGHIJ"
+    filas    = "ABCDEFGHIJ"
     columnas = list(range(1, 16))
 
     def construir_fila(f):
         return [{"ubicacion": f + str(c), "estado": "ocupado" if f + str(c) in ocupacion else "libre"} for c in columnas]
 
-    mapa = [construir_fila(f) for f in filas]
+
+    mapa = list(map(construir_fila, filas))
     return jsonify(mapa)
 
-# Retirar un vehículo
+# A PARTIR DE ACA LO DE RETIRO DEL VEHICULO
 @app.route("/retirar", methods=["DELETE"])
 def retirar():
     documento = request.json.get("documento")
@@ -87,10 +116,11 @@ def retirar():
     info = estacionamiento[documento]
     tipo, pago, lavado = info["info"]
     entry_time = datetime.fromisoformat(info["entry_time"])
-    exit_time = datetime.now()
+    exit_time  = datetime.now()
     diferencia = exit_time - entry_time
     horas = math.ceil(diferencia.total_seconds() / 3600)
 
+    # PARA CAlculAR el costo
     costo = horas * TARIFA_HORA
     if pago == "QR":
         costo += costo * RECARGO_QR
