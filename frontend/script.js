@@ -71,9 +71,9 @@ document.getElementById("retiro-form").addEventListener("submit", async e => {
     } else {
       document.getElementById("resultado").innerHTML =
         `<p>Entrada: ${data.entry_time}</p>
-         <p>Salida: ${data.exit_time}</p>
-         <p>Horas: ${data.horas}</p>
-         <p><strong>Total a pagar: $${data.costo}</strong></p>`;
+        <p>Salida: ${data.exit_time}</p>
+        <p>Horas: ${data.horas}</p>
+        <p><strong>Total a pagar: $${data.costo}</strong></p>`;
     }
     document.getElementById("retiro-form").reset();
     cargarMapa();
