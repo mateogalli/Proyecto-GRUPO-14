@@ -3,6 +3,7 @@ from flask_cors import CORS
 from datetime import datetime
 import math
 import os
+import qrcode
 
 app = Flask(__name__, static_folder="")  
 CORS(app)
@@ -16,6 +17,18 @@ TARIFA_HORA   = 2000
 RECARGO_QR    = 0.10    
 PRECIOS_LAVADO = {"MOTO":4000,"AUTO":10000,"CAMIONETA":15000}
 
+# Generar un QR
+QR_FOLDER = os.path.join("QR")
+os.makedirs(QR_FOLDER, exist_ok=True)
+
+def generar_qr(documento, tipo, ubicacion, entry_time):
+    contenido = f"Documento: {documento}\nTipo: {tipo}\nUbicación: {ubicacion}\nIngreso: {entry_time}"
+    qr = qrcode.make(contenido)
+    nombre_archivo = f"{documento}.png"
+    ruta = os.path.join(QR_FOLDER, nombre_archivo)
+    qr.save(ruta)
+    return ruta
+
 # Servir index.html desde la raíz
 @app.route("/", methods=["GET"])
 def home():
@@ -25,7 +38,6 @@ def home():
 @app.route("/registrar", methods=["POST"])
 def registrar():
     datos = request.json
-
     documento, ubicacion, tipo, pago, lavado = map(lambda k: datos.get(k), ["documento", "ubicacion", "tipo", "pago", "lavado"])
 
     if documento in estacionamiento:
@@ -34,7 +46,9 @@ def registrar():
         return jsonify({"error": "Ubicación ocupada"}), 400
 
     now = datetime.now()
+    info_basica = (tipo, pago, lavado)
     estacionamiento[documento] = {
+        "info": info_basica,
         "tipo": tipo,
         "pago": pago,
         "lavado": lavado,
@@ -42,6 +56,10 @@ def registrar():
         "entry_time": now.isoformat()
     }
     ocupacion[ubicacion] = documento
+
+    if pago == "QR":
+        generar_qr(documento, tipo, ubicacion, now.strftime("%Y-%m-%d %H:%M:%S"))
+
 
     return jsonify({
         "mensaje": "Registro exitoso",
@@ -81,9 +99,8 @@ def obtener_mapa():
     columnas = list(range(1, 16))
 
     def construir_fila(f):
-        return list(map(
-            lambda c: {"ubicacion": f + str(c), "estado": "ocupado" if f + str(c) in ocupacion else "libre"},
-            columnas))
+        return [{"ubicacion": f + str(c), "estado": "ocupado" if f + str(c) in ocupacion else "libre"} for c in columnas]
+
 
     mapa = list(map(construir_fila, filas))
     return jsonify(mapa)
@@ -97,6 +114,7 @@ def retirar():
         return jsonify({"error": "Documento no encontrado"}), 404
 
     info = estacionamiento[documento]
+    tipo, pago, lavado = info["info"]
     entry_time = datetime.fromisoformat(info["entry_time"])
     exit_time  = datetime.now()
     diferencia = exit_time - entry_time
@@ -104,10 +122,10 @@ def retirar():
 
     # Cálculo del costo
     costo = horas * TARIFA_HORA
-    if info["pago"] == "QR":
+    if pago == "QR":
         costo += costo * RECARGO_QR
-    if info["lavado"] == "SI":
-        costo += PRECIOS_LAVADO.get(info["tipo"], 0)
+    if lavado == "SI":
+        costo += PRECIOS_LAVADO.get(tipo, 0)
 
     ubicacion = info["ubicacion"]
     ocupacion.pop(ubicacion, None)
@@ -120,8 +138,28 @@ def retirar():
         "entry_time": entry_time.isoformat(),
         "exit_time": exit_time.isoformat(),
         "horas": horas,
-        "costo": int(costo)
+        "costo": int(costo),
+        "pago": pago
     })
 
+@app.route("/QR/<filename>")
+def servir_qr(filename):
+    return send_from_directory("QR", filename)
+
 if __name__ == "__main__":
+    app.testing = False
     app.run(debug=True)
+
+app.testing = True
+
+USUARIOS_AUTORIZADOS = {
+    "bautista": "contrabauti",
+    "alvaro": "contraalvaro",
+    "mateo": "contramate",
+    "matias": "contramati"
+}
+
+def login(nombre, password):
+    nombre = nombre.strip().lower()
+    return USUARIOS_AUTORIZADOS.get(nombre) == password
+
