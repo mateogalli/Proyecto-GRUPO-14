@@ -4,8 +4,11 @@ from datetime import datetime
 import math
 import os
 import qrcode
+from flask import Flask, send_from_directory
+import os
 
-app = Flask(__name__, static_folder="")  
+frontend_path = os.path.join(os.path.dirname(__file__), '..', 'frontend')
+app = Flask(__name__, static_folder=frontend_path, static_url_path='')  
 CORS(app)
 
 # Base de datos en memoria
@@ -32,7 +35,11 @@ def generar_qr(documento, tipo, ubicacion, entry_time):
 # Servir index.html desde la raíz
 @app.route("/", methods=["GET"])
 def home():
-    return send_from_directory(os.getcwd(), "index.html")
+    return send_from_directory(frontend_path, "index.html")
+
+@app.route("/<path:filename>")
+def frontend_files(filename):
+    return send_from_directory(frontend_path, filename)
 
 # Registrar un vehículo
 @app.route("/registrar", methods=["POST"])
