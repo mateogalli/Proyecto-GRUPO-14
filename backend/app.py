@@ -49,6 +49,8 @@ def registrar():
     }
     ocupacion[ubicacion] = documento
 
+    guardar_en_txt()  
+
     return jsonify({
         "mensaje": "Registro exitoso",
         "documento": documento,
@@ -58,21 +60,7 @@ def registrar():
 
 @app.route("/obtener", methods=["GET"])
 def obtener():
-    try:
-        with open("datos_estacionamiento.txt", "w", encoding="utf-8") as archivo:
-            for doc, datos in estacionamiento.items():
-                linea = (
-                    f"Documento: {doc}, "
-                    f"Tipo: {datos['tipo']}, "
-                    f"Pago: {datos['pago']}, "
-                    f"Lavado: {datos['lavado']}, "
-                    f"Ubicación: {datos['ubicacion']}, "
-                    f"Entrada: {datos['entry_time']}\n"
-                )
-                archivo.write(linea)
-        return jsonify(estacionamiento)
-    except Exception as e:
-        return jsonify({"error": f"No se pudo guardar el archivo: {str(e)}"}), 500
+    return jsonify(estacionamiento)
 
 @app.route("/datos_estacionamiento.txt")
 def descargar_archivo():
@@ -113,6 +101,8 @@ def retirar():
     ocupacion.pop(ubicacion, None)
     estacionamiento.pop(documento)
 
+    guardar_en_txt()  
+
     return jsonify({
         "mensaje": "Vehículo retirado correctamente",
         "documento": documento,
@@ -124,15 +114,27 @@ def retirar():
         "pago": pago
     })
 
-# Ruta para servir la imagen genérica qrRetiro.png
 @app.route("/QR/qrRetiro.png")
 def servir_qr_estatico():
     return send_from_directory(os.path.join(os.path.dirname(__file__), "QR"), "qrRetiro.png")
 
-if __name__ == "__main__":
-    app.testing = False
-    app.run(debug=True)
+def guardar_en_txt():
+    try:
+        with open("datos_estacionamiento.txt", "w", encoding="utf-8") as archivo:
+            for doc, datos in estacionamiento.items():
+                linea = (
+                    f"Documento: {doc}, "
+                    f"Tipo: {datos['tipo']}, "
+                    f"Pago: {datos['pago']}, "
+                    f"Lavado: {datos['lavado']}, "
+                    f"Ubicación: {datos['ubicacion']}, "
+                    f"Entrada: {datos['entry_time']}\n"
+                )
+                archivo.write(linea)
+    except Exception as e:
+        print(f"Error al guardar en txt: {e}")
 
+# Usuarios autorizados
 USUARIOS_AUTORIZADOS = {
     "bautista": "contrabauti",
     "alvaro": "contraalvaro",
@@ -143,3 +145,7 @@ USUARIOS_AUTORIZADOS = {
 def login(nombre, password):
     nombre = nombre.strip().lower()
     return USUARIOS_AUTORIZADOS.get(nombre) == password
+
+if __name__ == "__main__":
+    app.testing = False
+    app.run(debug=True)
