@@ -67,7 +67,7 @@ document.getElementById("retiro-form").addEventListener("submit", async e => {
   const data = await res.json();
   if (res.ok) {
     if (data.pago === "QR") {
-      mostrarQR(data.documento);
+      mostrarQR();
     } else {
       document.getElementById("resultado").innerHTML =
         `<p>Entrada: ${data.entry_time}</p>
@@ -82,10 +82,10 @@ document.getElementById("retiro-form").addEventListener("submit", async e => {
   }
 });
 
-function mostrarQR(documento) {
+function mostrarQR() {
   document.getElementById("app-content").style.display = "none";
   document.getElementById("qr-retiro-screen").style.display = "block";
-  document.getElementById("qr-retiro-img").src = `QR/${documento}.png`;
+  document.getElementById("qr-retiro-img").src = `QR/qrRetiro.png`;
 }
 
 function volver() {
